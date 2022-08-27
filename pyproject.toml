@@ -13,6 +13,8 @@ sentencepiece = "^0.1.97"
 fastapi = "^0.80.0"
 uvicorn = {extras = ["standard"], version = "^0.18.3"}
 pandas = "^1.4.3"
+Inject = "^4.3.1"
+dependency-injector = "^4.40.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"

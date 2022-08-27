@@ -62,7 +62,5 @@ class WordSimilarityResolverImpl(WordSimilarityResolver):
                     similar_words=similar_words
                 )
             )
-            # print(word, sim)
 
-        # TODO: あとでちゃんと実行するよ
         return PredictionResponse(results=results)
