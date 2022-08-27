@@ -51,7 +51,7 @@ class WordSimilarityResolverImpl(WordSimilarityResolver):
             for idx in candidate_vectors.index:
                 candidate_word = candidate_vectors.loc[idx, 'word']
                 candidate_vector_df = candidate_vectors.loc[idx, 'vector']
-                sim = similarity(np.array(tgt_word_vector_dict), np.array(candidate_vector_df).flatten())
+                sim = similarity(np.array(tgt_word_vector_dict), np.array(candidate_vector_df).flatten())[0].item()
 
                 similar_words.append(WordSimilarity(candidate_word, sim))
 
