@@ -12,7 +12,7 @@ RUN curl -sSL https://raw.githubusercontent.com/python-poetry/poetry/master/get-
     ln -s /opt/poetry/bin/poetry && \
     poetry config virtualenvs.create false
 
-RUN poetry install
+RUN poetry install --no-dev
 
 RUN adduser app
 USER app

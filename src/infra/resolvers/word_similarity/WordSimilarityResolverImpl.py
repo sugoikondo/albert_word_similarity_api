@@ -13,7 +13,13 @@ from src.domain.word_similarity.WordSimilarity import WordSimilarity
 from src.domain.word_similarity.WordSimilarityResolver import WordSimilarityResolver
 
 
-def similarity(v1: np.ndarray, v2: np.ndarray) -> float:
+def similarity(v1: np.ndarray, v2: np.ndarray) -> np.ndarray:
+    """
+    Calculate the cosine similarity between two vectors.
+    :param v1: vector 1
+    :param v2: vector 2
+    :return: One-dimensional, one-element array containing cos similarity
+    """
     n1 = np.linalg.norm(v1)
     n2 = np.linalg.norm(v2)
     return np.dot(v1, v2) / n1 / n2
@@ -27,7 +33,7 @@ class WordSimilarityResolverImpl(WordSimilarityResolver):
         logging.info('model loaded successfully')
 
     def resolve(self, request: PredictionRequest, config: PredictionConfig) -> PredictionResponse:
-        # 先に candidates 全てのベクトル表現を取得する
+        # First, obtain the variance representation of all target words to be compared.
         candidate_vectors: pd.DataFrame = pd.DataFrame(columns=['word', 'vector'])
         for candidate in request.candidates:
             input_ids = torch.tensor(self.tokenizer.encode(candidate.strip(), add_special_tokens=True)).unsqueeze(0)
@@ -39,7 +45,7 @@ class WordSimilarityResolverImpl(WordSimilarityResolver):
                 }, ignore_index=True
             )
 
-        # 次に候補者たちとの diff をそれぞれ取得する
+        # Then, get diffs with each of the candidates
         results: list[SimilarityResult] = []
         for word in request.target_words:
             input_ids = torch.tensor(self.tokenizer.encode(word, add_special_tokens=True)).unsqueeze(0)
@@ -59,7 +65,7 @@ class WordSimilarityResolverImpl(WordSimilarityResolver):
             results.append(
                 SimilarityResult(
                     word=word,
-                    similar_words=similar_words
+                    similar_words=similar_words[:config.top_n] if config.top_n > 0 else similar_words
                 )
             )
 
