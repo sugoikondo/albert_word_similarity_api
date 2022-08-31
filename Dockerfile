@@ -12,12 +12,10 @@ RUN curl -sSL https://install.python-poetry.org | python - && \
     ln -s /opt/poetry/bin/poetry && \
     poetry config virtualenvs.create false
 
-RUN poetry install --no-dev
+RUN poetry install --no-dev --no-interaction --no-ansi
 
 RUN adduser app
 USER app
 
 EXPOSE 8000
-ENTRYPOINT ["uvicorn", "main:app"]
-CMD ["--host", "0.0.0.0", "--port", "8000"]
-
+CMD ["gunicorn", "-k", "uvicorn.workers.UvicornWorker", "-b", "0.0.0.0:8000", "main:app"]
