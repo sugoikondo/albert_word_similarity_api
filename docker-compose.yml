@@ -9,3 +9,9 @@ services:
       - "8000:8000"
     volumes:
       - ./:/app
+  redis:
+    image: "redis:6.2.11"
+    ports:
+      - ${REDIS_PORT}:6379
+    volumes:
+      - ./docker/data/redis:/data
