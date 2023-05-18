@@ -1,3 +1,4 @@
+import asyncio
 import struct
 
 import numpy as np
@@ -12,24 +13,28 @@ class WordVectorCacheClient:
     def __init__(self):
         self.redis = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
-    def resolve(self, words: list[str]) -> np.ndarray:
+    async def resolve(self, words: list[str]) -> np.ndarray:
         vectors = []
         for word in words:
-            vectors.append(self.redis.get(word))
+            vectors.append(self.__restore_vector(word))
         return np.array(vectors)
 
-    def store(self, data: dict[str, np.ndarray]):
+    async def store(self, data: dict[str, np.ndarray]):
+        request_list = []
         for key, value in data.items():
-            self.redis.set(key, value)
+            request_list.append(self.__store_vector(key, value))
 
-    def __store_vector(self, word: str, vector: np.ndarray):
+        await asyncio.gather(*request_list)
+        return
+
+    async def __store_vector(self, word: str, vector: np.ndarray):
         height, width = vector.shape
         shape = struct.pack('>II', height, width)
         encoded = shape + vector.tobytes()
 
         self.redis.set(word, encoded)
 
-    def __restore_vector(self, word: str) -> np.ndarray:
+    async def __restore_vector(self, word: str) -> np.ndarray:
         encoded = self.redis.get(word)
         height, width = struct.unpack('>II', encoded[:8])
         vector = np.frombuffer(encoded, dtype=np.float32, offset=8).reshape(height, width)
