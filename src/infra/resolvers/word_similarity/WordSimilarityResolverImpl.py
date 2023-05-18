@@ -1,8 +1,8 @@
 import logging
-import torch
-import os.path
+
 import numpy as np
 import pandas as pd
+import torch
 from transformers import AlbertTokenizer, AlbertForPreTraining
 
 from src.domain.word_similarity.PredictionConfig import PredictionConfig
@@ -38,12 +38,16 @@ class WordSimilarityResolverImpl(WordSimilarityResolver):
         for candidate in request.candidates:
             input_ids = torch.tensor(self.tokenizer.encode(candidate.strip(), add_special_tokens=True)).unsqueeze(0)
             word_vector = torch.mean(self.model(input_ids, output_hidden_states=True).hidden_states[12], 1)
-            candidate_vectors = candidate_vectors.append(
-                {
-                    'word': candidate.strip(),
-                    'vector': pd.DataFrame(word_vector.detach().numpy())
-                }, ignore_index=True
-            )
+
+            candidate_vectors = pd.concat([
+                candidate_vectors,
+                pd.DataFrame(
+                    data=[[candidate.strip(), pd.DataFrame(word_vector.detach().numpy())]],
+                    columns=['word', 'vector'],
+                    index=[0]
+                )
+
+            ], ignore_index=True, axis=0)
 
         # Then, get diffs with each of the candidates
         results: list[SimilarityResult] = []
